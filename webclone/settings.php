@@ -1,3 +1,4 @@
 <?php
 
 define("WEBCLONE_MAXFILESIZE", 50000);
+define("WEBCLONE_FILEMOD", 0777);

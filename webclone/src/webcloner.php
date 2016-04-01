@@ -9,11 +9,16 @@ class WebCloner {
     }
 
     public function run() {
+        $url = $this->task->getId();
+        llog("Starting job: $url");
+
         $file = $this->download();
+        llog("Saving job: $url");
         $this->save($file);
 
         // parse new content
-        $parser = new Parser($this->task, $file);
+        llog("Parsing job: $url");
+        $parser = new XmlParser($this->task, $file);
         $tasks = $parser->getTasks();
 
         return $tasks;
@@ -37,7 +42,7 @@ class WebCloner {
 
         $filesystem->save(
             $this->task->getSaveDir(),
-            $this->task->getFilename(),
+            $this->task->getFilenamePath(),
             $file
         );
     }

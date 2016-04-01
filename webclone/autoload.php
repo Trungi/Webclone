@@ -11,3 +11,4 @@ require_once 'src/webcloner.php';
 require_once 'src/xmlparser.php';
 
 require_once 'src/exceptions/downloadSizeException.php';
+require_once 'src/exceptions/invalidUrlException.php';

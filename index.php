@@ -6,11 +6,10 @@ include 'vendor/autoload.php';
 include 'webclone/autoload.php';
 include 'queue.php';
 
-define("WEBCLONE_MAXFILESIZE", 50000);
 
 
 $url = 'http://www.st.fmph.uniba.sk/~trungel2/';
-$url = 'http://www.google.com';
+// $url = 'http://www.google.com';
 $dir = '/tmp/web';
 $filename = 'index.html';
 
@@ -19,17 +18,20 @@ $clone = new WebCloner($task);
 
 $result = $clone->run();
 
-foreach ($result as $r) {
-    $clone = new WebCloner($r);
-    $result = $clone->run();
+while ($result) {
+    try {
+        reset($result);
+        $key = key($result);
+
+        $doc = $result[$key];
+        unset($result[$key]);
+
+        $clone = new WebCloner($doc);
+        $xx = $clone->run();
+
+        $result = array_merge($result, $xx);
+    } catch (Exception $e) {
+        var_dump($e);
+    }
 }
-echo '<hr /><br />';
-var_dump($result);
-//////
-
-
-
-
-
-
 

@@ -15,8 +15,12 @@ class Task {
         $this->rootDir = $rootDir;
         $this->rootUrl = $rootUrl;
 
-        $urlParser = new UrlParser($rootUrl, $rootDir);
+        $urlParser = new UrlParser($rootUrl, $url);
         $this->url = $urlParser->getFullUrl();
+
+        $id = $this->getId();
+        $url = $this->getUrl();
+        llog("Created task: rootDir::$rootDir, rootUrl::$rootUrl, url::$url, id::$id");
     }
 
     public function getUrl() {
@@ -39,9 +43,9 @@ class Task {
         return $this->rootDir;
     }
 
-    public function getFilename() {
+    public function getFilenamePath() {
         $parser = new UrlParser($this->rootUrl, $this->url);
-        return $parser->getFilename();
+        return $parser->getFilenamePath();
     }
 
     public function isXml() {

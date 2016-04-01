@@ -5,23 +5,19 @@ class FileSystem {
     public function __construct() {
     }
 
-    public function save($directory, $filename, $file) {
+    public function save($subpath, $nextpath, $file) {
+        $fullPath = rtrim($subpath, '/') . '/' . ltrim($nextpath, '/');
+        $pos = strrpos($fullPath, '/');
+        llog("Full path: $fullPath ---- $pos");
+
+        $directory = substr($fullPath, 0, $pos+1);
+
         if (!file_exists($directory)) {
-            mkdir($directory);
+            llog("Creating directory: $directory");
+            mkdir($directory, WEBCLONE_FILEMOD, true);
         }
-
-        var_dump($directory);
-        if (!endsWith($directory, '/')) {
-            $directory = $directory . '/';
-        }
-
-        echo '<hr />';
-        var_dump($directory);
-        var_dump($filename);
-        var_dump($directory . $filename);
-        echo '<hr />';
-
-        file_put_contents($directory . $filename, $file);
+        
+        file_put_contents($fullPath, $file);
     }
 
 
