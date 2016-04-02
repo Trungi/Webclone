@@ -20,20 +20,22 @@ class XmlParser {
 
         foreach ($this->parser->find('[href]') as $link) {
             try {
-                $link->href = $this->task->getRelativeUrl($link->href);
+                $href = $this->task->getRelativeUrl($link->href);
+                $link->setAttribute('href', $href);
             } catch (InvalidURLException $e) {
 
             }
         }
         foreach ($this->parser->find('[src]') as $link) {
             try {
-                $link->src = $this->task->getRelativeUrl($link->src);
+                $src = $this->task->getRelativeUrl($link->src);
+                $link->setAttribute('src', $src);
             } catch (InvalidURLException $e) {
 
             }
         }
 
-        return $this->parser->html;
+        return $this->parser->outerHtml;
     }
 
     public function getTasks() {

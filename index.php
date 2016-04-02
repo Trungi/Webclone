@@ -9,7 +9,7 @@ include 'queue.php';
 
 
 $url = 'http://www.st.fmph.uniba.sk/~trungel2/diploma/other.html';
-// $url = 'http://www.google.com';
+$url = 'http://www.facebook.com';
 $dir = '/tmp/web';
 $filename = 'index.html';
 
