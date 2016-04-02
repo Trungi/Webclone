@@ -43,9 +43,13 @@ class Task {
         return $this->rootDir;
     }
 
-    public function getFilenamePath() {
+    public function getFilename() {
+        return md5($this->url);
+    }
+
+    public function getRelativeUrl($toUrl) {
         $parser = new UrlParser($this->rootUrl, $this->url);
-        return $parser->getFilenamePath();
+        return $parser->getRelativeUrl($toUrl);
     }
 
     public function isXml() {

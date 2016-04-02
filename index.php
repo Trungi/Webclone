@@ -8,7 +8,7 @@ include 'queue.php';
 
 
 
-$url = 'http://www.st.fmph.uniba.sk/~trungel2/';
+$url = 'http://www.st.fmph.uniba.sk/~trungel2/diploma/other.html';
 // $url = 'http://www.google.com';
 $dir = '/tmp/web';
 $filename = 'index.html';
@@ -18,6 +18,8 @@ $clone = new WebCloner($task);
 
 $result = $clone->run();
 
+
+// recursively
 while ($result) {
     try {
         reset($result);

@@ -13,10 +13,31 @@ class XmlParser {
         $this->task = $task;
 
         $this->parser = new PHPHtmlParser\Dom;
-        $this->parser->load($content);
+    }
+
+    public function getFixedContent() {
+        $this->parser->load($this->content);
+
+        foreach ($this->parser->find('[href]') as $link) {
+            try {
+                $link->href = $this->task->getRelativeUrl($link->href);
+            } catch (InvalidURLException $e) {
+
+            }
+        }
+        foreach ($this->parser->find('[src]') as $link) {
+            try {
+                $link->src = $this->task->getRelativeUrl($link->src);
+            } catch (InvalidURLException $e) {
+
+            }
+        }
+
+        return $this->parser->html;
     }
 
     public function getTasks() {
+        $this->parser->load($this->content);
         $tasks = array();
 
         foreach ($this->parser->find('[href]') as $link) {

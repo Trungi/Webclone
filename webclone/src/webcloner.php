@@ -13,14 +13,15 @@ class WebCloner {
         llog("Starting job: $url");
 
         $file = $this->download();
-        llog("Saving job: $url");
-        $this->save($file);
 
         // parse new content
         llog("Parsing job: $url");
         $parser = new XmlParser($this->task, $file);
         $tasks = $parser->getTasks();
+        $file = $parser->getFixedContent();
 
+        llog("Saving job: $url");
+        $this->save($file);
         return $tasks;
     }
 
@@ -42,7 +43,7 @@ class WebCloner {
 
         $filesystem->save(
             $this->task->getSaveDir(),
-            $this->task->getFilenamePath(),
+            $this->task->getFilename(),
             $file
         );
     }
