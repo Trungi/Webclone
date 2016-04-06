@@ -7,33 +7,51 @@ include 'webclone/autoload.php';
 include 'queue.php';
 
 
-
-$url = 'http://www.st.fmph.uniba.sk/~trungel2/diploma/other.html';
-$url = 'http://www.facebook.com';
-$dir = '/tmp/web';
+$url = 'http://www.st.fmph.uniba.sk/~trungel2/';
+// $url = 'https://www.facebook.com/unsupportedbrowser';
+// $url = 'http://www.st.fmph.uniba.sk/~jelen4/photobooth_for_windows_7_by_vhanla.zip';
+$dir = '/tmp/web/';
 $filename = 'index.html';
 
-$task = new Task($dir, $url, $url);
-$clone = new WebCloner($task);
+$site = new Website();
+$site->id = 1;
+$site->slug = 'abc';
+$site->rootUrl = $url;
 
-$result = $clone->run();
+$doc = new Document();
+$doc->website_id = 1;
+$doc->id = 2;
+$doc->url = '';
+$doc->done = 0;
+
+$db = new Database();
+$x = $db->getNext();
+$site = $db->getWebsite($x['website_id']);
+
+while ($x) {
+    $task = new Task($site, $x);
+    $clone = new WebCloner($task);
+    $result = $clone->run();
+
+    $x = $db->getNext();
+}
 
 
 // recursively
-while ($result) {
-    try {
-        reset($result);
-        $key = key($result);
+// while ($result) {
+//     try {
+//         reset($result);
+//         $key = key($result);
 
-        $doc = $result[$key];
-        unset($result[$key]);
+//         $doc = $result[$key];
+//         unset($result[$key]);
 
-        $clone = new WebCloner($doc);
-        $xx = $clone->run();
+//         $clone = new WebCloner($doc);
+//         $xx = $clone->run();
 
-        $result = array_merge($result, $xx);
-    } catch (Exception $e) {
-        var_dump($e);
-    }
-}
+//         $result = array_merge($result, $xx);
+//     } catch (Exception $e) {
+//         var_dump($e);
+//     }
+// }
 

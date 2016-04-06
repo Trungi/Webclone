@@ -1,56 +1,107 @@
 <?php
 
 
+/**
+*   Class for CURL handling
+*/
 class Downloader {
 
+    /**
+    *   Current task object
+    */
     protected $task;
 
+    /**
+    *   Construct
+    */
     public function __construct($task) {
         $this->task = $task;
     }
 
-    public function getSize() {
-        $url = $this->task->getUrl();
-
-        // Assume failure.
-        $result = -1;
+    /**
+    *   Issue an curl request to get file information
+    */
+    public function getFileInfo() {
+        $url = $this->task->getFullUrl();
 
         $curl = curl_init( $url );
 
-        // Issue a HEAD request and follow any redirects.
+        // Issue a HEAD request and not follow any redirects.
         curl_setopt( $curl, CURLOPT_NOBODY, true );
         curl_setopt( $curl, CURLOPT_HEADER, true );
         curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-        curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-        // curl_setopt( $curl, CURLOPT_USERAGENT, get_user_agent_string() );
+        curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, false );
 
         $data = curl_exec( $curl );
         curl_close( $curl );
 
-        if( $data ) {
-            $content_length = "unknown";
-            $status = "unknown";
+        return $this->getHeaders($data);
+    }
 
-            if( preg_match( "/^HTTP\/1\.[01] (\d\d\d)/", $data, $matches ) ) {
-                $status = (int)$matches[1];
-            }
+    public function login() {
+        $username = 'bob';
+        $password = 'bob';
+        $loginUrl = 'http://spsz.6f.sk/verifylogin';
+        $cookieFilename = '/var/web/cookie.txt';
 
-            if( preg_match( "/Content-Length: (\d+)/", $data, $matches ) ) {
-                $content_length = (int)$matches[1];
-            }
+        //init curl
+        $ch = curl_init();
 
-            // http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-            if( $status == 200 || ($status > 300 && $status <= 308) ) {
-                $result = $content_length;
+        //Set the URL to work with
+        curl_setopt($ch, CURLOPT_URL, $loginUrl);
+
+        // ENABLE HTTP POST
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        //Set the post parameters
+        curl_setopt($ch, CURLOPT_POSTFIELDS, 'username='.$username.'&password='.$password);
+
+        //Handle cookies for the login
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookeFilename);
+
+        //Setting CURLOPT_RETURNTRANSFER variable to 1 will force cURL
+        //not to print out the results of its query.
+        //Instead, it will return the results as a string return value
+        //from curl_exec() instead of the usual true/false.
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        //execute the request (the login)
+        $store = curl_exec($ch);
+
+        return file_exists($cookieFilename);
+    }
+
+    /**
+    *   Transforms HTTP headers into PHP array
+    */
+    private function getHeaders($response) {
+        $headers = array();
+
+        $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
+
+        foreach (explode("\r\n", $header_text) as $i => $line) {
+            if ($i === 0) {
+                $headers['http_code'] = $line;
+            } else {
+                list ($key, $value) = explode(': ', $line);
+                $headers[$key] = $value;
             }
         }
 
-        return $result;
-
+        // fix status code
+        if ($response) {
+            var_dump($response);
+            $status = explode(' ', $headers['http_code']);
+            $headers['http_code'] = $status[1];
+        }
+        return $headers;
     }
 
+    /**
+    *   Download the file
+    */
     public function download() {
-        $file = file_get_contents($this->task->getUrl());
+        $file = file_get_contents($this->task->getFullUrl());
 
         if ($file === false) {
             throw new \Exception("Wrong file");

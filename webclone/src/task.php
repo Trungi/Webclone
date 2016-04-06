@@ -1,67 +1,111 @@
 <?php
 
+
+/**
+*   Class for storing one task
+*/
 class Task {
-    const xmlExtensions = array("xml", "xhtml", "html", "html5", "php", "php5");
+    /**
+    *   Document
+    */
+    public $document;
 
-    protected $url;
+    /**
+    *   Website
+    */
+    public $website;
 
-    protected $session;
+    /**
+    * Database access
+    */
+    private $database;
 
-    protected $rootDir;
+    public function __construct($website, $document) {
+        if (is_array($document)) {
+            $doc = new Document();
 
-    protected $filename;
+            foreach ($document as $key => $val) {
+                $doc->$key = $val;
+            }
 
-    public function __construct($rootDir, $rootUrl, $url, $session = null) {
-        $this->rootDir = $rootDir;
-        $this->rootUrl = $rootUrl;
+            $document = $doc;
+        }
 
-        $urlParser = new UrlParser($rootUrl, $url);
-        $this->url = $urlParser->getFullUrl();
+        if (is_array($website)) {
+            $doc = new Website();
 
-        $id = $this->getId();
-        $url = $this->getUrl();
-        llog("Created task: rootDir::$rootDir, rootUrl::$rootUrl, url::$url, id::$id");
+            foreach ($website as $key => $val) {
+                $doc->$key = $val;
+            }
+
+            $website = $doc;
+        }
+
+        if ($website->id != $document->website_id) {
+            throw new Exception("Nope");
+        }
+
+        $this->document = $document;
+        $this->website = $website;
+
+        $this->database = new Database();
     }
 
-    public function getUrl() {
-        return $this->url;
+    public function isLoggedIn() {
+        return isset($this->website->cookies);
     }
 
-    public function getId() {
-        return $this->url;
+    public function save() {
+        llog("Saving task.");
+
+        $this->database->updateDocument(
+            $this->document->id,
+            $this->document->slug,
+            $this->document->http_code,
+            $this->document->content_type,
+            $this->document->redirect_location,
+            $this->document->response_headers,
+            $this->document->done
+        );
     }
 
-    public function getRootDir() {
-        return $this->rootDir;
+    public function createSubTask($url) {
+        llog("Creating sub task: $url");
+
+        $urlParser = new UrlParser();
+        $fullUrl = $urlParser->compileFullUrl($this->getFullUrl(), $url);
+
+        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl)) {
+            $urlPart = substr($fullUrl, strlen($this->website->rootUrl));
+            llog("URL ".$this->getFullUrl()." $url ".$this->website->rootUrl." $urlPart . ");
+
+            $this->database->createDocument($this->website->id, $urlPart);
+        }
+
     }
 
-    public function getRootUrl() {
-        return $this->rootUrl;
-    }
+    public function generateRedirectLocation($url) {
+        $urlParser = new UrlParser();
+        $fullUrl = $urlParser->compileFullUrl($this->getFullUrl(), $url);
 
-    public function getSaveDir() {
-        return $this->rootDir;
+        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl)) {
+            $urlPart = substr($fullUrl, strlen($this->website->rootUrl));
+
+            return $urlPart;
+        } else {
+            return $url;
+        }
     }
 
     public function getFilename() {
-        return md5($this->url);
-    }
-
-    public function getRelativeUrl($toUrl) {
-        $parser = new UrlParser($this->rootUrl, $this->url);
-        return $parser->getRelativeUrl($toUrl);
-    }
-
-    public function isXml() {
-        if (endsWith($url, '/')) {
-            return True;
+        if (!$this->document->slug) {
+            $this->document->slug = uniqid();
         }
 
-        foreach ($this->xmlExtensions as $extension) {
-            if (endsWith($url, $extension)) {
-                return True;
-            }
-        }
-        return False;
+        return WEBCLONE_ROOTDIR . $this->website->slug . '/' . $this->document->slug;
+    }
+
+    public function getFullUrl() {
+        return $this->website->rootUrl . $this->document->url;
     }
 }
