@@ -62,7 +62,7 @@ class UrlParser {
         $path = parse_url($destinationUrl, PHP_URL_PATH);
 
         // merge root URL and request URL paths
-        if ($path[0] == '/') {
+        if (!empty($path) && $path[0] == '/') {
             $root['path'] = $path;
         } else {
             // remove file from root URL e.g. http://aaa.com/index.php -> http://aaa.com
@@ -88,7 +88,32 @@ class UrlParser {
     *   $sourceUrl must be full type URl
     *   $destinationUrl can be relative or absolute
     */
-    public function compileRelativeUrl($sourceUrl, $destinationUrl) {
+    public function compileRelativeUrl($rootUrl, $sourceUrl, $destinationUrl) {
+        if (!startsWith($destinationUrl, $rootUrl)) {
+            echo("<br />=-------------------------------=-==-=-=-=- $destinationUrl<br />");
+            return $destinationUrl;
+        }
+        llog("PARSING $rootUrl------$destinationUrl");
+
+        $fromUrl = parse_url($this->compileFullUrl($rootUrl, $sourceUrl), PHP_URL_PATH);
+        $toUrl = parse_url($this->compileFullUrl($rootUrl, $destinationUrl), PHP_URL_PATH);
+
+        $root = parse_url($this->_cleanPath($rootUrl), PHP_URL_PATH);
+
+        $returns = substr_count($fromUrl, '/') - substr_count($root, '/');
+
+        // build folders up
+        $result = "";
+
+        for ($i=0; $i<$returns; $i++) {
+            $result = $result . '../';
+        }
+
+        // build folders down
+        $result = $result . substr($toUrl, strlen($root));
+
+        llog("RESULT IS $rootUrl || $sourceUrl || $destinationUrl || $result");
+        return $result;
 
     }
 

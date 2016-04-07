@@ -22,6 +22,10 @@ class WebCloner {
             case '200':
                 $this->_handleOK($info);
                 break;
+            case '400':
+            case '401':
+            case '402':
+            case '403':
             case '404':
                 $this->_handleNotFound($info);
                 break;
@@ -59,15 +63,22 @@ class WebCloner {
     }
 
     private function _handleOK($info) {
+        if (!$this->task->isLoggedIn() && in_array($info['Content-Type'], array('text/html', 'text/xml', 'text/xhtml'))) {
+            $this->_login($info);
+        }
+
         $content = $this->downloader->download();
 
         $parser = null;
 
         switch ($info['Content-Type']) {
-
             case 'text/html':
-            default:
+            case 'text/xhtml':
+            case 'text/xml':
                 $parser = new XmlParser($this->task, $content);
+                break;
+            default:
+                $parser = new FileParser($this->task, $content);
                 break;
         }
 
@@ -82,6 +93,21 @@ class WebCloner {
         $this->task->document->content_type = $info['Content-Type'];
         $this->task->document->response_headers = json_encode($info);
         $this->task->save();
+    }
+
+    private function _login($info) {
+        $content = $this->downloader->download();
+
+        $parser = new XmlParser($this->task, $content);
+        $loginInfo = $parser->getLoginInfo();
+
+        $cookie = $this->downloader->login($loginInfo['login_url']);
+
+        if ($cookie) {
+            $this->task->saveCookie($cookie);
+        }
+        var_dump($cookie);
+        return $cookie;
     }
 
 }

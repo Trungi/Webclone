@@ -51,10 +51,6 @@ class Task {
         $this->database = new Database();
     }
 
-    public function isLoggedIn() {
-        return isset($this->website->cookies);
-    }
-
     public function save() {
         llog("Saving task.");
 
@@ -75,9 +71,8 @@ class Task {
         $urlParser = new UrlParser();
         $fullUrl = $urlParser->compileFullUrl($this->getFullUrl(), $url);
 
-        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl)) {
+        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl) && startsWith($url, 'http')) {
             $urlPart = substr($fullUrl, strlen($this->website->rootUrl));
-            llog("URL ".$this->getFullUrl()." $url ".$this->website->rootUrl." $urlPart . ");
 
             $this->database->createDocument($this->website->id, $urlPart);
         }
@@ -107,5 +102,15 @@ class Task {
 
     public function getFullUrl() {
         return $this->website->rootUrl . $this->document->url;
+    }
+
+    public function isLoggedIn() {
+        return !empty($this->website->cookie);
+    }
+
+    public function saveCookie($cookie) {
+        $this->website->cookie = $cookie;
+
+        $this->database->saveCookie($this->website->id, $cookie);
     }
 }

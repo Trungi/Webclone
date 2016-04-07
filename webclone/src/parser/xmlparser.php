@@ -16,27 +16,28 @@ class XmlParser {
     }
 
     public function getFixedContent() {
-        return $this->content;
-        // $this->parser->load($this->content);
+        $this->parser->load($this->content);
 
-        // foreach ($this->parser->find('[href]') as $link) {
-        //     try {
-        //         $href = $this->task->getRelativeUrl($link->href);
-        //         $link->setAttribute('href', $href);
-        //     } catch (InvalidURLException $e) {
+        $urlParser = new UrlParser();
 
-        //     }
-        // }
-        // foreach ($this->parser->find('[src]') as $link) {
-        //     try {
-        //         $src = $this->task->getRelativeUrl($link->src);
-        //         $link->setAttribute('src', $src);
-        //     } catch (InvalidURLException $e) {
+        foreach ($this->parser->find('[href]') as $link) {
+            $url = $urlParser->compileRelativeUrl(
+                $this->task->website->rootUrl,
+                $this->task->document->url,
+                $link->href
+            );
+            $link->setAttribute('href', $url);
+        }
+        foreach ($this->parser->find('[src]') as $link) {
+            $url = $urlParser->compileRelativeUrl(
+                $this->task->website->rootUrl,
+                $this->task->document->url,
+                $link->src
+            );
+            $link->setAttribute('src', $url);
+        }
 
-        //     }
-        // }
-
-        // return $this->parser->outerHtml;
+        return $this->parser->outerHtml;
     }
 
     public function createSubTasks() {
@@ -53,6 +54,16 @@ class XmlParser {
 
     private function createTask($url) {
         $this->task->createSubTask($url);
+    }
+
+    public function getLoginInfo() {
+        $this->parser->load($this->content);
+        $form = $this->parser->find("form");
+
+        return array(
+            'login_url' => $form->getAttribute('action')
+        );
+
     }
 
 }

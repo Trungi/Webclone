@@ -9,6 +9,7 @@ require_once 'src/urlparser.php';
 require_once 'src/webcloner.php';
 
 require_once 'src/parser/xmlparser.php';
+require_once 'src/parser/fileparser.php';
 
 require_once 'src/exceptions/downloadSizeException.php';
 require_once 'src/exceptions/invalidUrlException.php';

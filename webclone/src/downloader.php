@@ -32,17 +32,20 @@ class Downloader {
         curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
         curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, false );
 
+        // if we are logged in, set cookie
+        if ($this->task->isLoggedIn()) {
+            curl_setopt($curl, CURLOPT_COOKIE, $this->task->website->cookie);
+        }
+
         $data = curl_exec( $curl );
         curl_close( $curl );
 
         return $this->getHeaders($data);
     }
 
-    public function login() {
-        $username = 'bob';
-        $password = 'bob';
-        $loginUrl = 'http://spsz.6f.sk/verifylogin';
-        $cookieFilename = '/var/web/cookie.txt';
+    public function login($loginUrl) {
+        $username           = $this->task->website->login;
+        $password           = $this->task->website->password;
 
         //init curl
         $ch = curl_init();
@@ -56,8 +59,8 @@ class Downloader {
         //Set the post parameters
         curl_setopt($ch, CURLOPT_POSTFIELDS, 'username='.$username.'&password='.$password);
 
-        //Handle cookies for the login
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookeFilename);
+        // do not follow location
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false );
 
         //Setting CURLOPT_RETURNTRANSFER variable to 1 will force cURL
         //not to print out the results of its query.
@@ -65,10 +68,20 @@ class Downloader {
         //from curl_exec() instead of the usual true/false.
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        //execute the request (the login)
-        $store = curl_exec($ch);
+        // read headers
+        curl_setopt($ch, CURLOPT_HEADER, 1);
 
-        return file_exists($cookieFilename);
+        //execute the request (the login)
+        $data = curl_exec($ch);
+
+        curl_close($ch);
+        // find cookies
+        $cookie = '';
+        $pattern = '/Set-Cookie:(.*?)\n/';
+        if (preg_match_all($pattern, $data, $result))
+        $cookie = implode(';', $result[1]);
+
+        return $cookie;
     }
 
     /**
@@ -90,10 +103,15 @@ class Downloader {
 
         // fix status code
         if ($response) {
-            var_dump($response);
             $status = explode(' ', $headers['http_code']);
             $headers['http_code'] = $status[1];
         }
+        // fix content type
+        if ($response) {
+            $type = explode(';', $headers['Content-Type']);
+            $headers['Content-Type'] = $type[0];
+        }
+
         return $headers;
     }
 
@@ -101,7 +119,24 @@ class Downloader {
     *   Download the file
     */
     public function download() {
-        $file = file_get_contents($this->task->getFullUrl());
+        $url = $this->task->getFullUrl();
+
+        $curl = curl_init();
+
+        curl_setopt($curl, CURLOPT_URL, $url);
+
+        // Issue a HEAD request and not follow any redirects.
+        // curl_setopt( $curl, CURLOPT_NOBODY, true );
+        curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, false );
+
+        // if we are logged in, set cookie
+        if ($this->task->isLoggedIn()) {
+            curl_setopt($curl, CURLOPT_COOKIE, $this->task->website->cookie);
+        }
+
+        $file = curl_exec( $curl );
+        curl_close( $curl );
 
         if ($file === false) {
             throw new \Exception("Wrong file");

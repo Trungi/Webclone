@@ -26,7 +26,7 @@ class Website {
     /**
     *   Filename where the login cookie is stored after successful login
     */
-    public $cookieFilename;
+    public $cookie;
 
     /**
     *   Root URL of this webpage. This is URL user submitted for copying.

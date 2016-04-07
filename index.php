@@ -4,8 +4,6 @@ ini_set('display_errors',1);
 
 include 'vendor/autoload.php';
 include 'webclone/autoload.php';
-include 'queue.php';
-
 
 $url = 'http://www.st.fmph.uniba.sk/~trungel2/';
 // $url = 'https://www.facebook.com/unsupportedbrowser';
@@ -26,9 +24,9 @@ $doc->done = 0;
 
 $db = new Database();
 $x = $db->getNext();
-$site = $db->getWebsite($x['website_id']);
 
 while ($x) {
+    $site = $db->getWebsite($x['website_id']);
     $task = new Task($site, $x);
     $clone = new WebCloner($task);
     $result = $clone->run();

@@ -11,7 +11,6 @@ class Database {
     }
 
     public function createDocument($website_id, $url) {
-        var_dump($url);
         $this->mysqli->query(
             "INSERT INTO `webclone_document` (`website_id`, `url`) VALUES ('$website_id',  '$url');"
         );
@@ -25,12 +24,19 @@ class Database {
              SET `slug`='$slug',`http_code`='$http_code',`response_headers`='$headers',`done`=$done,`redirect_location`='$redirect_location',`content_type`='$content_type'
              WHERE `id`='$id'; "
         );
-        var_dump($this->mysqli->error);
     }
 
     public function getWebsite($id) {
         $result = $this->mysqli->query("SELECT * FROM `webclone_website` WHERE `id`=  $id")->fetch_array();
         return $result;
+    }
+
+    public function saveCookie($id, $cookie) {
+        $this->mysqli->query(
+            "UPDATE `webclone_website` 
+             SET `cookie`='$cookie'
+             WHERE `id`='$id'; "
+        );
     }
 
     public function getNext() {
