@@ -15,7 +15,7 @@ class XmlParser {
         $this->parser = new PHPHtmlParser\Dom;
     }
 
-    public function getFixedContent() {
+    public function getFixedContent() { return $this->content;
         $this->parser->load($this->content);
 
         $urlParser = new UrlParser();
@@ -53,6 +53,9 @@ class XmlParser {
     }
 
     private function createTask($url) {
+        // TODO: remove
+        if ($url == "http://spsz.6f.sk/home/logout") { llog("skipping logout"); return; }
+
         $this->task->createSubTask($url);
     }
 
