@@ -23,6 +23,7 @@ if ($result['http_code'] == 200) {
     $file =  WEBCLONE_ROOTDIR . $result['site_slug'] . '/' . $result['document_slug'];
     header("Content-Type: ".$result['content_type']);
     readfile($file);
+    die();
 } 
 // handle REDIRECT
 elseif ($result['http_code'] == 301 or $result['http_code'] == 302) {
