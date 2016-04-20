@@ -56,6 +56,9 @@ class Downloader {
         // ENABLE HTTP POST
         curl_setopt($ch, CURLOPT_POST, 1);
 
+        // set user agent
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36');
+
         //Set the post parameters
         curl_setopt($ch, CURLOPT_POSTFIELDS, 'username='.$username.'&password='.$password);
 
@@ -67,19 +70,28 @@ class Downloader {
         //Instead, it will return the results as a string return value
         //from curl_exec() instead of the usual true/false.
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        
+        // track request header
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 
         // read headers
         curl_setopt($ch, CURLOPT_HEADER, 1);
 
         //execute the request (the login)
         $data = curl_exec($ch);
+        
+        var_dump(curl_getinfo($ch)); echo '<hr />';
 
         curl_close($ch);
         // find cookies
         $cookie = '';
         $pattern = '/Set-Cookie:(.*?)\n/';
-        if (preg_match_all($pattern, $data, $result))
-        $cookie = implode(';', $result[1]);
+
+        if (preg_match_all($pattern, $data, $result)) {
+            $cookie = implode(';', $result[1]);
+        } else {
+            $cookie = null;
+        }
 
         return $cookie;
     }

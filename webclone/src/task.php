@@ -66,12 +66,11 @@ class Task {
     }
 
     public function createSubTask($url) {
-        llog("Creating sub task: $url");
-
         $urlParser = new UrlParser();
         $fullUrl = $urlParser->compileFullUrl($this->getFullUrl(), $url);
 
-        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl) && startsWith($url, 'http')) {
+        if ($urlParser->isValidSubUrl($this->website->rootUrl, $fullUrl)) {
+            llog("Creating sub task: $fullUrl");
             $urlPart = substr($fullUrl, strlen($this->website->rootUrl));
 
             $this->database->createDocument($this->website->id, $urlPart);
@@ -100,6 +99,10 @@ class Task {
         return WEBCLONE_ROOTDIR . $this->website->slug . '/' . $this->document->slug;
     }
 
+    public function getDirectory() {
+        return WEBCLONE_ROOTDIR . $this->website->slug;
+    }
+
     public function getFullUrl() {
         return $this->website->rootUrl . $this->document->url;
     }
@@ -111,6 +114,6 @@ class Task {
     public function saveCookie($cookie) {
         $this->website->cookie = $cookie;
 
-        $this->database->saveCookie($this->website->id, $cookie);
+        // $this->database->saveCookie($this->website->id, $cookie);
     }
 }

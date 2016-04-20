@@ -14,6 +14,11 @@ class Website {
     public $slug;
 
     /**
+    *   Auth URL of this webpage. This is URL used for authentication.
+    */
+    public $authUrl;
+
+    /**
     *   Information used for logging in to this page
     */
     public $login;

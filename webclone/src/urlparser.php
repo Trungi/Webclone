@@ -61,6 +61,8 @@ class UrlParser {
         $root = parse_url($sourceUrl);
         $path = parse_url($destinationUrl, PHP_URL_PATH);
 
+        // TODO: check if destiantion URL starts with http
+        
         // merge root URL and request URL paths
         if (!empty($path) && $path[0] == '/') {
             $root['path'] = $path;
@@ -80,7 +82,6 @@ class UrlParser {
         unset($root['fragment']);
 
         return unparse_url($root);
-
     }
 
     /**

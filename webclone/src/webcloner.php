@@ -63,9 +63,10 @@ class WebCloner {
     }
 
     private function _handleOK($info) {
-        if (!$this->task->isLoggedIn() && in_array($info['Content-Type'], array('text/html', 'text/xml', 'text/xhtml'))) {
-            $this->_login($info);
-        }
+        // if (!$this->task->isLoggedIn() && in_array($info['Content-Type'], array('text/html', 'text/xml', 'text/xhtml'))) {
+        //     $this->_login($info);
+        // }
+        $this->_login($info);
 
         $content = $this->downloader->download();
 
@@ -85,8 +86,9 @@ class WebCloner {
         $parser->createSubTasks();
         $fixedContent = $parser->getFixedContent();
 
-        $filename = $this->task->getFilename();
-        file_put_contents($filename, $fixedContent);
+        $this->_save($fixedContent);
+        // var_dump($fixedContent);
+        // echo '<hr><hr/><hr/>';
 
         $this->task->document->done = 1;
         $this->task->document->http_code = $info['http_code'];
@@ -96,18 +98,28 @@ class WebCloner {
     }
 
     private function _login($info) {
-        $content = $this->downloader->download();
+        try {
+            $cookie = $this->downloader->login($this->task->website->authUrl);
 
-        $parser = new XmlParser($this->task, $content);
-        $loginInfo = $parser->getLoginInfo();
+            if ($cookie) {
+                $this->task->saveCookie($cookie);
+            }
 
-        $cookie = $this->downloader->login($loginInfo['login_url']);
-
-        if ($cookie) {
-            $this->task->saveCookie($cookie);
+            return $cookie;
+        } catch (Exception $e) {
+            var_dump($e);
+            return null;
         }
-        var_dump($cookie);
-        return $cookie;
     }
 
+    private function _save($fixedContent) {
+        $directory = $this->task->getDirectory();
+        $filename = $this->task->getFilename();
+
+        if (!file_exists($directory) && !is_dir($directory)) {
+            mkdir($directory);
+        }
+
+        file_put_contents($filename, $fixedContent);
+    }
 }
