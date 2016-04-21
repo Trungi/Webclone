@@ -80,7 +80,7 @@ class Downloader {
         //execute the request (the login)
         $data = curl_exec($ch);
         
-        var_dump(curl_getinfo($ch)); echo '<hr />';
+        // var_dump(curl_getinfo($ch)); echo '<hr />';
 
         curl_close($ch);
         // find cookies
