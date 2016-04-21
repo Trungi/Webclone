@@ -43,12 +43,30 @@ class XmlParser {
 
     public function createSubTasks() {
         foreach ($this->page->filter('[href]') as $link) {
-            $task = $this->createTask($link->getAttribute('href'));
+            if (!$this->isLogoutLink($link)) {
+                $task = $this->createTask($link->getAttribute('href'));
+            }
         }
 
         foreach ($this->page->filter('[src]') as $link) {
-            $task = $this->createTask($link->getAttribute('src'));
+            if (!$this->isLogoutLink($link)) {
+                $task = $this->createTask($link->getAttribute('src'));
+            }
         }
+    }
+
+    private function isLogoutLink($link) {
+        return in_array(
+            strtolower($link->nodeValue),
+            array(
+                'log out',
+                'logout',
+                'odhlasit',
+                'odhlasit sa',
+                'odhlásiť',
+                'odhlásiť sa'
+            )
+        );
     }
 
     private function createTask($url) {

@@ -91,10 +91,8 @@ class UrlParser {
     */
     public function compileRelativeUrl($rootUrl, $sourceUrl, $destinationUrl) {
         if (!startsWith($destinationUrl, $rootUrl)) {
-            echo("<br />=-------------------------------=-==-=-=-=- $destinationUrl<br />");
             return $destinationUrl;
         }
-        llog("PARSING $rootUrl------$destinationUrl");
 
         $fromUrl = parse_url($this->compileFullUrl($rootUrl, $sourceUrl), PHP_URL_PATH);
         $toUrl = parse_url($this->compileFullUrl($rootUrl, $destinationUrl), PHP_URL_PATH);
@@ -113,7 +111,7 @@ class UrlParser {
         // build folders down
         $result = $result . substr($toUrl, strlen($root));
 
-        llog("RESULT IS $rootUrl || $sourceUrl || $destinationUrl || $result");
+        // llog("RESULT IS $rootUrl || $sourceUrl || $destinationUrl || $result");
         return $result;
 
     }
