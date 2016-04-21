@@ -1,18 +1,37 @@
 <?php
+ini_set('display_startup_errors',1);
+ini_set('display_errors',1);
+
+require_once '../webclone/settings.php';
+require_once '../webclone/src/database.php';
 
 $uri = $_SERVER['REQUEST_URI'];
 
-$url = 'http://www.st.fmph.uniba.sk/~trungel2' . $uri;
-$folder = '/tmp/web/';
+// delete first '/'
+$uri = substr($uri, 1);
 
-require_once '../webclone/src/database.php';
+// split to slug and url
+$pos = strpos($uri, '/');
+$slug = substr($uri, 0, $pos);
+$url = substr($uri, $pos+1);
 
 $db = new Database();
-$result = $db->getByUrl($url);
+$result = $db->getDocument($slug, $url);
 
-$file =  $folder . $result['filename'];
-
-readfile($file);
-
-// $x = file_get_contents($file);
-// echo $x;
+// handle 200 OK
+if ($result['http_code'] == 200) {
+    $file =  WEBCLONE_ROOTDIR . $result['site_slug'] . '/' . $result['document_slug'];
+    header("Content-Type: ".$result['content_type']);
+    readfile($file);
+    die();
+} 
+// handle REDIRECT
+elseif ($result['http_code'] == 301 or $result['http_code'] == 302) {
+    header("Location: ".$result['redirect_location']);
+    die();
+}
+// handle ERROR
+elseif ($result['http_code'] == 404 or $result['http_code'] == 302) {
+    header("HTTP/1.0 404 Not Found");
+    die();
+}
