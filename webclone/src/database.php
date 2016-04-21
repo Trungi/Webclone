@@ -47,7 +47,7 @@ class Database {
     public function getDocument($rootSlug, $url) {
         $result = $this->mysqli->query(
             "SELECT *, s.slug as site_slug, d.slug as document_slug 
-             FROM ".WEBCLONE_DB_TABLE_DOCUMENT." d, ".WEBCLONE_DB_TABLE_DOCUMENT." s
+             FROM ".WEBCLONE_DB_TABLE_DOCUMENT." d, ".WEBCLONE_DB_TABLE_SITE." s
              WHERE d.url= '$url' AND s.slug = '$rootSlug' AND d.website_id = s.id;"
         )->fetch_array();
 
