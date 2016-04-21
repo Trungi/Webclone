@@ -61,14 +61,4 @@ class XmlParser {
         $this->task->createSubTask($url);
     }
 
-    public function getLoginInfo() {
-        $this->parser->load($this->content);
-        $form = $this->parser->find("form");
-
-        return array(
-            'login_url' => $form->getAttribute('action')
-        );
-
-    }
-
 }

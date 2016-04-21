@@ -4,15 +4,15 @@ class Database {
 
     protected $mysqli;
 
-
     public function __construct() {
-        $this->mysqli = new mysqli("localhost", "root", "root", "webclone");
-        $this->mysqli->query('SELECT DATABASE `webclone`;');
+        $this->mysqli = new mysqli(WEBCLONE_DB_HOST, WEBCLONE_DB_USER, WEBCLONE_DB_PASS, WEBCLONE_DB_DATABASE);
+        $this->mysqli->query('SELECT DATABASE `'.WEBCLONE_DB_DATABASE.'`;');
     }
 
     public function createDocument($website_id, $url) {
         $this->mysqli->query(
-            "INSERT INTO `webclone_document` (`website_id`, `url`) VALUES ('$website_id',  '$url');"
+            "INSERT INTO `webclone_document` (`website_id`, `url`)
+             VALUES ('$website_id',  '$url');"
         );
     }
 

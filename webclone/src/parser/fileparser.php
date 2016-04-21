@@ -23,7 +23,4 @@ class FileParser {
 
     }
 
-    public function getLoginData() {
-        return null;
-    }
 }
